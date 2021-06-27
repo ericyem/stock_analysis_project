@@ -3,7 +3,9 @@ from pandas_datareader import data as pd
 import pandas
 import datetime 
 import sys
-
+import numpy as np
+import matplotlib as mpl
+from matplotlib import pyplot as pl
 
 # start date, ticker 
 # taking start date from today to how many years ago
@@ -13,13 +15,40 @@ import sys
 
 # pickling the data frame so do not have reload every time
 
-
+def stock_plot(df, select=None):
+    if select is not None:
+        df[select].plot()
+        pl.show()
+    else:
+        df.plot()
+        pl.show()
+    
+        
 def main(ticker: str, start: datetime, end=datetime.datetime.now()):
+    # reading data
     raw_data = pd.DataReader(ticker, 'yahoo', start, end)
-    raw_data.to_pickle('CBA_frame.pickle')
-    stock_frame = pandas.read_pickle('CBA_frame.pickle')
-    print(stock_frame.head())
-
+    raw_data.to_pickle('stock_frame.pickle')
+    stock_frame = pandas.read_pickle('stock_frame.pickle')
+    
+    # deleting unnecessary data
+    del stock_frame['Volume']
+    del stock_frame['Adj Close']
+    
+    
+    # renaming the columns
+    columns = {'High': 'High Price',
+           'Low': 'Low Price',
+           'Open': 'Open Price',
+           'Close': 'Close Price',}
+    stock_frame.rename(columns=columns, inplace=True)
+    
+    selection = input("Select your column of interest or press enter if there is none: ")
+    if selection == "":
+        stock_plot(stock_frame)
+    else:
+        stock_plot(stock_frame, selection)
+    
+    
 
 
 if __name__ == "__main__":
