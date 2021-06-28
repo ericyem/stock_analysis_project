@@ -6,6 +6,8 @@ import sys
 import numpy as np
 import matplotlib as mpl
 from matplotlib import pyplot as pl
+import plotly.graph_objects as go
+
 
 # start date, ticker 
 # taking start date from today to how many years ago
@@ -14,14 +16,28 @@ from matplotlib import pyplot as pl
 
 
 # pickling the data frame so do not have reload every time
-
+def get_mid(df):
+    high = df['HighPrice']
+    low = df['LowPrice']
+    # if the bid or ask doesn't exist, return 0.0
+    if np.isnan(high) or np.isnan(low):
+        return 0.0
+    else:
+        return (high + low) / 2.0
+    
 def stock_plot(df, select=None):
     if select is not None:
+        # shows the data of interest selected
         df[select].plot()
         pl.show()
     else:
-        df.plot()
-        pl.show()
+        # graphs the candle stick
+        fig = go.Figure(data=[go.Candlestick(x=df['Date'],
+                open=df['OpenPrice'],
+                high=df['HighPrice'],
+                low=df['LowPrice'],
+                close=df['ClosePrice'])])
+        fig.show()
     
         
 def main(ticker: str, start: datetime, end=datetime.datetime.now()):
@@ -35,18 +51,27 @@ def main(ticker: str, start: datetime, end=datetime.datetime.now()):
     del stock_frame['Adj Close']
     
     
-    # renaming the columns
-    columns = {'High': 'High Price',
-           'Low': 'Low Price',
-           'Open': 'Open Price',
-           'Close': 'Close Price',}
-    stock_frame.rename(columns=columns, inplace=True)
+    # resetting the index to be able to access date
+    stock_frame = stock_frame.reset_index()
     
+    # renaming the data
+    columns = {'High': 'HighPrice',
+               'Low': 'LowPrice',
+               'Open': 'OpenPrice',
+               'Close': 'ClosePrice',}
+    stock_frame.rename(columns=columns, inplace=True)
+    stock_frame['MidPrice'] = stock_frame.apply(get_mid, axis=1)
+    print(stock_frame)
+    
+    # selection of a particular interest of data, or graphing all in a candle stick
     selection = input("Select your column of interest or press enter if there is none: ")
     if selection == "":
         stock_plot(stock_frame)
     else:
         stock_plot(stock_frame, selection)
+    
+    
+    
     
     
 
