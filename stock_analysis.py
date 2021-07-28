@@ -14,7 +14,6 @@ import plotly.graph_objects as go
 
 # reading the data from two years ago to today for a particular stock
 
-
 # pickling the data frame so do not have reload every time
 def get_mid(df):
     high = df['HighPrice']
